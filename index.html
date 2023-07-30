@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    {{.Title}}
+    <canvas id="canvas" width="800" height="600">
+
+    </canvas>
+    <script src="src/engine.js"></script>
+    <script>
+        var a = new KairaEngine.Vector2();
+        var b = new KairaEngine.Vector2(1,2);
+        //{{.}}
+        var i = 0;
+        var p = new KairaEngine.Projectile(new KairaEngine.Vector2(0,0));
+        p.addComponent(
+            new KairaEngine.Rigidbody(
+                Projectile = p,
+                velocity = new KairaEngine.Vector2(1,1),
+                accelation = new KairaEngine.Vector2(-1,-1)
+            )
+        );
+        KairaEngine.update = function(){
+            KairaEngine.Graphics = new Graphics("canvas");
+            KairaEngine.Graphics.getGL();
+            KairaEngine.Graphics.clearColor();
+            KairaEngine.Graphics.setShaders();
+            p.update();
+            /*
+            graph.setBuffers({
+                position: {
+                    numberOfComponents: 2, // X and Y ordered pair coordinates
+                    data: new Float32Array([
+                        0.0 , 0.5 + i, -0.5 + i,
+                        -0.5 + i, 0.5 + i, -0.5 + i
+                    ])
+                },
+                color: { 
+                    numberOfComponents: 3, // RGB triple
+                    data: new Float32Array([
+                        1, 0, 0,
+                        0, 1, 0,
+                        0, 0, 1
+                    ])
+                }
+            });
+            graph.use();
+            */
+            i += KairaEngine.deltaTime;
+            a = a.add(b.multiple(i));
+            /*console.log({
+                "a":a,
+                "b":b,
+                "i":i
+            });*/
+        }
+        
+        
+       
+    </script>
+</body>
+</html>
