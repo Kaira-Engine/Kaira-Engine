@@ -1,102 +1,4 @@
-class Graphics {
-    constructor(canvasName){
-		this.canvasName = canvasName;
-        this.shaders = {
-            vs: `#version 300 es
-                in vec2 vertPosition;
-                in vec3 vertColor;
-                out vec3 fragColor;
-              
-                void main() {
-                    fragColor = vertColor;
-                    gl_Position = vec4(vertPosition, 0, 1);
-                }`,
-          
-            fs: `#version 300 es
-                precision mediump float;
-                in vec3 fragColor;
-                out vec4 outColor;
-              
-                void main() {
-                    outColor = vec4(fragColor, 1);
-                }`
-        };
-        this.vertexAttributes = {
-            position: {
-                numberOfComponents: 2, // X and Y ordered pair coordinates
-                data: new Float32Array([0.0, 0.5, -0.5, -0.5, 0.5, -0.5])
-            },
-            color: { 
-                numberOfComponents: 3, // RGB triple
-                data: new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1])
-            }
-        };
-	}
-	getGL(){
-		this.cavas = document.getElementById(this.canvasName);
-		this.gl = this.cavas.getContext('webgl2');
-		if (!this.gl) alert("Your browser does not support WebGL");
-	}
-	clearColor(R=0,G=0,B=0,A=1){
-		this.gl.clearColor(R,G,B,A);
-		this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-	}
-    setShaders(shaders=this.shaders){
-        this.vertexShader = this.gl.createShader(this.gl.VERTEX_SHADER);
-        this.fragmentShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
-        
-        this.gl.shaderSource(this.vertexShader, shaders.vs);
-        this.gl.shaderSource(this.fragmentShader,shaders.fs);
-
-        this.gl.compileShader(this.vertexShader);
-        this.gl.compileShader(this.fragmentShader);
-
-        this.program = this.gl.createProgram();
-        
-        this.gl.attachShader(this.program, this.vertexShader);
-        this.gl.attachShader(this.program, this.fragmentShader);
-
-        this.gl.linkProgram(this.program);
-    }
-    setBuffers(vertexAttributes=this.vertexAttributes){
-        this.vertexBufferObjectPosition = this.gl.createBuffer();
-        this.vertexBufferObjectColor = this.gl.createBuffer();
-
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBufferObjectPosition);
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, vertexAttributes.position.data,this.gl.STATIC_DRAW);
-
-        this.positionAttribLocation = this.gl.getAttribLocation(this.program, 'vertPosition');
-
-        this.gl.vertexAttribPointer(
-            this.positionAttribLocation,
-            vertexAttributes.position.numberOfComponents,
-            this.gl.FLOAT,
-            this.gl.FALSE,
-            0,
-            0
-        );
-        this.gl.enableVertexAttribArray(this.positionAttribLocation);
-
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.vertexBufferObjectColor);
-        this.gl.bufferData(this.gl.ARRAY_BUFFER,vertexAttributes.color.data,this.gl.STATIC_DRAW);
-
-        this.colorAttribLocation = this.gl.getAttribLocation(this.program,'vertColor');
-
-        this.gl.vertexAttribPointer(
-            this.colorAttribLocation,
-            vertexAttributes.color.numberOfComponents,
-            this.gl.FLOAT,
-            this.gl.FALSE,
-            0,
-            0
-        );
-        this.gl.enableVertexAttribArray(this.colorAttribLocation);
-    }
-    use(){
-        this.gl.useProgram(this.program);
-        this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
-    }
-}
+//import { Graphics } from "./graphics";
 
 var KairaEngine = {};
 
@@ -136,19 +38,27 @@ KairaEngine.Vector2 = class {
     divade(a = 0){
         return new KairaEngine.Vector2(this.x / a, this.y / a);
     }
-}
-
-KairaEngine.Transform = class extends KairaEngine.Component {
-    constructor(Projectile = KairaEngine.Projectile){
-        this.Projectile = Projectile;
+    distance(a = Vector2){
+        var dis = Math.sqrt(Math.abs(this.x - a.x) + Math.abs(this.y - a.y));
+        return dis;
     }
 }
 
-KairaEngine.Graphics = new Graphics();
+KairaEngine.Transform = class extends KairaEngine.Component {
+    constructor(position = KairaEngine.Vector2, scale = KairaEngine.Vector2){
+        super();
+        this.position = position;
+        this.scale = scale;
+    }
+}
+
+//#region glgraphics
+//KairaEngine.Graphics = new Graphics();
+//#endregion
 
 KairaEngine.Projectile = class{
-    constructor(position = KairaEngine.Vector2, components = []){
-        this.position = position;
+    constructor(transform = KairaEngine.Transform, components = []){
+        this.transform = transform;
         this.components = components;
     }
     addComponent(component){
@@ -167,13 +77,16 @@ KairaEngine.Projectile = class{
             element.Projectile = this;
             element.update();
         });
+        //#region glgraphics
+        /*
+        KairaEngine.Graphics.setShaders();
         KairaEngine.Graphics.setBuffers({
             position: {
                 numberOfComponents: 3, // X and Y ordered pair coordinates
                 data: new Float32Array([
-                    0.0 + this.position.x, 0.5 + this.position.y, 0,
-                    -0.5 + this.position.x, -0.5 + this.position.y, 0,
-                    0.5 + this.position.x, -0.5 + this.position.y, 0,
+                    (0.0 * this.transform.scale.x) + this.transform.position.x, (0.5 * this.transform.scale.y) + this.transform.position.y, 0,
+                    (-0.5 * this.transform.scale.x) + this.transform.position.x, (-0.5 * this.transform.scale.y) + this.transform.position.y, 0,
+                    (0.5 * this.transform.scale.x) + this.transform.position.x, (-0.5 * this.transform.scale.y) + this.transform.position.y, 0,
                 ])
             },
             color: { 
@@ -182,6 +95,8 @@ KairaEngine.Projectile = class{
             }
         });
         KairaEngine.Graphics.use();
+        */
+        //#endregion
     }
 }
 KairaEngine.Rigidbody = class extends KairaEngine.Component {
@@ -190,22 +105,122 @@ KairaEngine.Rigidbody = class extends KairaEngine.Component {
         this.Projectile = Projectile;
         this.velocity = velocity;
         this.accelation = accelation;
+        this.Collider = {};
+
+        this.Collider.min = new KairaEngine.Vector2;
+        this.Collider.max = new KairaEngine.Vector2;
+        
+        this.Collider.area = function(min = new KairaEngine.Vector2, max = new KairaEngine.Vector2){
+            //#region glgraphics
+            /*
+            KairaEngine.Graphics.setShaders();
+            //#region bottom
+            KairaEngine.Graphics.setBuffers({
+                position: {
+                    numberOfComponents: 2, // X and Y ordered pair coordinates
+                    data: new Float32Array([
+                        min.x,min.y,
+                        max.x,min.y
+                    ])
+                },
+                color: { 
+                    numberOfComponents: 3, // RGB triple
+                    data: new Float32Array([1, 0, 0, 1, 0, 0, 1, 0, 0])
+                }
+            });
+            KairaEngine.Graphics.use(KairaEngine.Graphics.gl.LINES);
+            //#endregion
+            //#region right
+            KairaEngine.Graphics.setBuffers({
+                position: {
+                    numberOfComponents: 2, // X and Y ordered pair coordinates
+                    data: new Float32Array([
+                        max.x,min.y,
+                        max.x,max.y
+                    ])
+                },
+                color: { 
+                    numberOfComponents: 3, // RGB triple
+                    data: new Float32Array([1, 0, 0, 1, 0, 0, 1, 0, 0])
+                }
+            });
+            KairaEngine.Graphics.use(KairaEngine.Graphics.gl.LINES);
+            //#endregion
+            //#region top
+            KairaEngine.Graphics.setBuffers({
+                position: {
+                    numberOfComponents: 2, // X and Y ordered pair coordinates
+                    data: new Float32Array([
+                        max.x,max.y,
+                        min.x,max.y
+                        
+                    ])
+                },
+                color: { 
+                    numberOfComponents: 3, // RGB triple
+                    data: new Float32Array([1, 0, 0, 1, 0, 0, 1, 0, 0])
+                }
+            });
+            KairaEngine.Graphics.use(KairaEngine.Graphics.gl.LINES);
+            //#endregion
+            //#region left
+            KairaEngine.Graphics.setBuffers({
+                position: {
+                    numberOfComponents: 2, // X and Y ordered pair coordinates
+                    data: new Float32Array([
+                        min.x,max.y,
+                        min.x,min.y
+                        
+                    ])
+                },
+                color: { 
+                    numberOfComponents: 3, // RGB triple
+                    data: new Float32Array([1, 0, 0, 1, 0, 0, 1, 0, 0])
+                }
+            });
+            KairaEngine.Graphics.use(KairaEngine.Graphics.gl.LINES);
+            //#endregion
+            */
+           //#endregion
+        }
+        
     }
     update(){
-        console.log(this.velocity);
+        //console.log(this.velocity);
+
+        this.Collider.min = new KairaEngine.Vector2(
+            this.Projectile.transform.position.x - (this.Projectile.transform.scale.x/2),
+            this.Projectile.transform.position.y - (this.Projectile.transform.scale.y/2)
+        );
+        this.Collider.max = new KairaEngine.Vector2(
+            this.Projectile.transform.position.x + (this.Projectile.transform.scale.x/2),
+            this.Projectile.transform.position.y + (this.Projectile.transform.scale.y/2)
+        );
         
-        this.Projectile.position = this.Projectile.position.add(this.velocity.multiple(KairaEngine.deltaTime));
+        this.Projectile.transform.position = this.Projectile.transform.position.add(this.velocity.multiple(KairaEngine.deltaTime));
         this.velocity = this.velocity.add(this.accelation.multiple(KairaEngine.deltaTime));
         
+        
+        
+    }
+    onCollisionEnter(collision = new KairaEngine.Rigidbody){
+        console.log(collision);
+        
+        this.Collider.area(this.Collider.min,this.Collider.max);
+        this.Collider.area(collision.Collider.min,collision.Collider.max);
+
+        console.log(this.Collider);
+        console.log(collision);
+
+        if (this.Collider.min.distance(collision.Collider.max) > 0.1) return false;
+        if (this.Collider.max.distance(collision.Collider.min) > 0.1) return false;
+        else return true;
+       
     }
 }
 
-
 var KairaEditor = {};
 
-window.onload = function() {            
-    function test() {
-        alert("test");
-    }
+window.onload = function() {
     setInterval(KairaEngine.update, 100);
 }
