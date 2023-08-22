@@ -8,7 +8,7 @@ KairaEngine.update = function(){
 }
 
 KairaEngine.Component = class {
-    update(){
+    update(Projectile = KairaEngine.Projectile){
 
     }
 }
@@ -75,7 +75,7 @@ KairaEngine.Projectile = class{
     update(){
         this.components.forEach(element => {
             element.Projectile = this;
-            element.update();
+            element.update(this);
         });
         //#region glgraphics
         /*
@@ -100,8 +100,9 @@ KairaEngine.Projectile = class{
     }
 }
 KairaEngine.Rigidbody = class extends KairaEngine.Component {
-    constructor(Projectile = KairaEngine.Projectile,velocity = new KairaEngine.Vector2, accelation = new KairaEngine.Vector2){
+    constructor(Projectile = KairaEngine.Projectile,mass = 1,velocity = new KairaEngine.Vector2, accelation = new KairaEngine.Vector2){
         super();
+        this.mass = mass;
         this.Projectile = Projectile;
         this.velocity = velocity;
         this.accelation = accelation;
@@ -185,8 +186,11 @@ KairaEngine.Rigidbody = class extends KairaEngine.Component {
         }
         
     }
-    update(){
-        //console.log(this.velocity);
+    update(Projectile = KairaEngine.Projectile){
+        
+        this.Projectile = Projectile;
+        
+        //console.log(this.Projectile.transform.position);
 
         this.Collider.min = new KairaEngine.Vector2(
             this.Projectile.transform.position.x - (this.Projectile.transform.scale.x/2),
@@ -204,13 +208,13 @@ KairaEngine.Rigidbody = class extends KairaEngine.Component {
         
     }
     onCollisionEnter(collision = new KairaEngine.Rigidbody){
-        console.log(collision);
+        console.log("collider");
         
         this.Collider.area(this.Collider.min,this.Collider.max);
         this.Collider.area(collision.Collider.min,collision.Collider.max);
 
-        console.log(this.Collider);
-        console.log(collision);
+        //console.log(this.Collider.min.distance(collision.Collider.max));
+        //console.log(this.Collider.max.distance(collision.Collider.min));
 
         if (this.Collider.min.distance(collision.Collider.max) > 0.1) return false;
         if (this.Collider.max.distance(collision.Collider.min) > 0.1) return false;
@@ -219,8 +223,29 @@ KairaEngine.Rigidbody = class extends KairaEngine.Component {
     }
 }
 
+KairaEngine.Collider = {};
+KairaEngine.Collider.SphereCollider = class extends KairaEngine.Component {
+    constructor(Projectile = new KairaEngine.Projectile,radius = 1){
+        super();
+        this.Projectile = Projectile;
+        this.radius = radius;
+    }
+    update(Projectile){
+        this.Projectile = Projectile;
+    }
+    onCollisionEnter(collider = KairaEngine.Collider.SphereCollider){
+        //console.log((this.radius/2)+(collider.radius/2));
+        //console.log(this.Projectile.transform.position.distance(collider.Projectile.transform.position));
+        console.log(collider);
+        if (this.Projectile.transform.position.distance(collider.Projectile.transform.position) <= (this.radius/2)+(collider.radius/2)){
+            return true;
+        }
+        else return false;
+    }
+}
+
 var KairaEditor = {};
 
 window.onload = function() {
-    setInterval(KairaEngine.update, 100);
+    setInterval(KairaEngine.update, KairaEngine.deltaTime);
 }

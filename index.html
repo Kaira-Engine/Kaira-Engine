@@ -24,7 +24,7 @@
                 super();
                 this.Projectile = Projectile;
             }
-            update(){
+            update(Projectile){
                 graphics.setShaders();
                 graphics.setBuffers({
                     position: {
@@ -41,7 +41,7 @@
                     }
                 });
                 graphics.use();
-                console.log(123);
+                //console.log(123);
             }
         }
 
@@ -53,24 +53,32 @@
             new KairaEngine.Vector2(-1,0),
             new KairaEngine.Vector2(.5,.5)
         ));
-        p1.addComponent(
+        p1.components = [
             new KairaEngine.Rigidbody(
                 Projectile = p1,
                 velocity = new KairaEngine.Vector2(1,0),
                 accelation = new KairaEngine.Vector2(0,0)
-            )
-        );
+            ),
+            new KairaEngine.Collider.SphereCollider(
+                Projectile = p1,
+                .1
+            ),
+        ];
         var p2 = new KairaEngine.Projectile(new KairaEngine.Transform(
             new KairaEngine.Vector2(1,0),
             new KairaEngine.Vector2(.5,.5)
         ));
-        p2.addComponent(
+        p2.components = [
             new KairaEngine.Rigidbody(
                 Projectile = p2,
                 velocity = new KairaEngine.Vector2(-1,0),
                 accelation = new KairaEngine.Vector2(0,0)
-            )
-        );
+            ),
+            new KairaEngine.Collider.SphereCollider(
+                Projectile = p2,
+                .1
+            ),
+        ];
 
         p1.addComponent(new GLDraw(p1));
         p2.addComponent(new GLDraw(p2));
@@ -92,16 +100,22 @@
                 console.log(31);
             }
             */
-           console.log(p1.transform.position.distance(p2.transform.position));
-           console.log(p1.components[0].onCollisionEnter(p2.components[0]));
-           p1.update();
-           p2.update();
-           if (p1.transform.position.distance(p2.transform.position) < p1.transform.scale.x){
+            
+           
+           if (p1.components[1].onCollisionEnter(p2.components[1])){
                 p1.components[0].velocity = p1.components[0].velocity.multiple(-1);
                 p1.components[0].accelation = p1.components[0].accelation.multiple(-1);
 
                 p2.components[0].velocity = p2.components[0].velocity.multiple(-1);
                 p2.components[0].accelation = p2.components[0].accelation.multiple(-1);
+            }
+            else {
+                console.log(p1.transform.position.distance(p2.transform.position));
+                console.log(p1.components[0].onCollisionEnter(p2.components[0]));
+                var aa = p1.components[0].onCollisionEnter(p2.components[0]);
+                console.log(a);
+                p1.update();
+                p2.update();
             }
             /*
             graph.setBuffers({

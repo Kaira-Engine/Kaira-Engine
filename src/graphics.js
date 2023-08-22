@@ -92,8 +92,8 @@ class Graphics {
         );
         this.gl.enableVertexAttribArray(this.colorAttribLocation);
     }
-    use(drawType = this.gl.TRIANGLES){
+    use(drawType = this.gl.TRIANGLES,a = 0,b = 3){
         this.gl.useProgram(this.program);
-        this.gl.drawArrays(drawType, 0, 3);
+        this.gl.drawArrays(drawType, a, b);
     }
 }
