@@ -107,119 +107,19 @@ KairaEngine.Rigidbody = class extends KairaEngine.Component {
         this.velocity = velocity;
         this.accelation = accelation;
         this.Collider = {};
-
-        this.Collider.min = new KairaEngine.Vector2;
-        this.Collider.max = new KairaEngine.Vector2;
-        
-        this.Collider.area = function(min = new KairaEngine.Vector2, max = new KairaEngine.Vector2){
-            //#region glgraphics
-            /*
-            KairaEngine.Graphics.setShaders();
-            //#region bottom
-            KairaEngine.Graphics.setBuffers({
-                position: {
-                    numberOfComponents: 2, // X and Y ordered pair coordinates
-                    data: new Float32Array([
-                        min.x,min.y,
-                        max.x,min.y
-                    ])
-                },
-                color: { 
-                    numberOfComponents: 3, // RGB triple
-                    data: new Float32Array([1, 0, 0, 1, 0, 0, 1, 0, 0])
-                }
-            });
-            KairaEngine.Graphics.use(KairaEngine.Graphics.gl.LINES);
-            //#endregion
-            //#region right
-            KairaEngine.Graphics.setBuffers({
-                position: {
-                    numberOfComponents: 2, // X and Y ordered pair coordinates
-                    data: new Float32Array([
-                        max.x,min.y,
-                        max.x,max.y
-                    ])
-                },
-                color: { 
-                    numberOfComponents: 3, // RGB triple
-                    data: new Float32Array([1, 0, 0, 1, 0, 0, 1, 0, 0])
-                }
-            });
-            KairaEngine.Graphics.use(KairaEngine.Graphics.gl.LINES);
-            //#endregion
-            //#region top
-            KairaEngine.Graphics.setBuffers({
-                position: {
-                    numberOfComponents: 2, // X and Y ordered pair coordinates
-                    data: new Float32Array([
-                        max.x,max.y,
-                        min.x,max.y
-                        
-                    ])
-                },
-                color: { 
-                    numberOfComponents: 3, // RGB triple
-                    data: new Float32Array([1, 0, 0, 1, 0, 0, 1, 0, 0])
-                }
-            });
-            KairaEngine.Graphics.use(KairaEngine.Graphics.gl.LINES);
-            //#endregion
-            //#region left
-            KairaEngine.Graphics.setBuffers({
-                position: {
-                    numberOfComponents: 2, // X and Y ordered pair coordinates
-                    data: new Float32Array([
-                        min.x,max.y,
-                        min.x,min.y
-                        
-                    ])
-                },
-                color: { 
-                    numberOfComponents: 3, // RGB triple
-                    data: new Float32Array([1, 0, 0, 1, 0, 0, 1, 0, 0])
-                }
-            });
-            KairaEngine.Graphics.use(KairaEngine.Graphics.gl.LINES);
-            //#endregion
-            */
-           //#endregion
-        }
         
     }
     update(Projectile = KairaEngine.Projectile){
         
         this.Projectile = Projectile;
         
-        //console.log(this.Projectile.transform.position);
-
-        this.Collider.min = new KairaEngine.Vector2(
-            this.Projectile.transform.position.x - (this.Projectile.transform.scale.x/2),
-            this.Projectile.transform.position.y - (this.Projectile.transform.scale.y/2)
-        );
-        this.Collider.max = new KairaEngine.Vector2(
-            this.Projectile.transform.position.x + (this.Projectile.transform.scale.x/2),
-            this.Projectile.transform.position.y + (this.Projectile.transform.scale.y/2)
-        );
+        console.log(this.accelation);
         
         this.Projectile.transform.position = this.Projectile.transform.position.add(this.velocity.multiple(KairaEngine.deltaTime));
         this.velocity = this.velocity.add(this.accelation.multiple(KairaEngine.deltaTime));
         
         
         
-    }
-    onCollisionEnter(collision = new KairaEngine.Rigidbody){
-        console.log("collider");
-        
-        this.Collider.area(this.Collider.min,this.Collider.max);
-        this.Collider.area(collision.Collider.min,collision.Collider.max);
-
-        //console.log(this.Collider.min.distance(collision.Collider.max));
-        //console.log(this.Collider.max.distance(collision.Collider.min));
-
-        if (this.Collider.min.distance(collision.Collider.max) > 0.1) return false;
-        if (this.Collider.max.distance(collision.Collider.min) > 0.1) return false;
-        else return true;
-       
     }
 }
 
@@ -246,6 +146,3 @@ KairaEngine.Collider.SphereCollider = class extends KairaEngine.Component {
 
 var KairaEditor = {};
 
-window.onload = function() {
-    setInterval(KairaEngine.update, KairaEngine.deltaTime);
-}
