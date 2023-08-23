@@ -1,4 +1,103 @@
 # Kaira-Engine
-Web based physical engine
+<link href="favicon.ico" rel="icon" type="image/x-icon">
+<style>
+  canvas {
+    border-style: solid;
+  }
+</style>
 
-## Usage
+- [Introduction](#introduction)
+- [Documentation](#documentation)
+  - [Manuel](Docs/Manuel.md)
+
+## Introduction
+[Kaira Engine](#kaira-engine) is a web based physical engine.
+## Documentation
+- ## [Manuel](Docs/Manuel.md)
+
+
+<canvas id="canvas" width="800" height="600"></canvas>
+<script src="src/graphics.js">
+      
+</script>
+<script src="src/engine.js"></script>
+<script>
+    // Get the canvas element
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    class SphereMesh extends KairaEngine.Component {
+        constructor(Projectile = new KairaEngine.Projectile){
+            super();
+            this.Projectile = Projectile;
+            // Set the circle properties
+            this.radius = 50;
+        }
+        update(Projectile){
+            //console.log(this.Projectile.transform.position.y);
+            // Draw the circle
+            ctx.beginPath();
+            ctx.fillStyle = 'grey';
+            //ctx.arc(this.Projectile.transform.position.x, this.Projectile.transform.position.y, this.radius, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.stroke();
+        }
+    }
+    function ColliderGizmos(collider){
+        ctx.beginPath();
+        ctx.strokeStyle = 'green';
+        ctx.lineWidth = 2;
+        console.log(collider.radius);
+        ctx.arc(collider.Projectile.transform.position.x, collider.Projectile.transform.position.y, collider.radius, 0, 2 * Math.PI);
+        ctx.stroke();
+    }
+    var Ball = new KairaEngine.Projectile(new KairaEngine.Transform(
+        new KairaEngine.Vector2(0,0),
+        new KairaEngine.Vector2(.5,.5)
+    ));
+    Ball.components = [
+        new KairaEngine.Rigidbody(
+            Projectile = Ball,
+            velocity = new KairaEngine.Vector2(0,0),
+            accelation = new KairaEngine.Vector2(10,9.8)
+        ),
+        new KairaEngine.Collider.SphereCollider(
+            Projectile = Ball,
+            25
+        ),
+        new SphereMesh(Ball)
+    ];
+    var Ball2 = new KairaEngine.Projectile(new KairaEngine.Transform(
+        new KairaEngine.Vector2(canvas.width,canvas.height),
+        new KairaEngine.Vector2(.5,.5)
+    ));
+    Ball2.components = [
+        new KairaEngine.Rigidbody(
+            Projectile = Ball,
+            velocity = new KairaEngine.Vector2(0,0),
+            accelation = new KairaEngine.Vector2(-10,-8)
+        ),
+        new KairaEngine.Collider.SphereCollider(
+            Projectile = Ball,
+            25
+        ),
+        new SphereMesh(Ball)
+    ];
+    var deltaTime = 0;
+    //KairaEngine.deltaTime = 1/25;
+    KairaEngine.update = function(){
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0,0,canvas.width, canvas.height);
+        Ball.update();
+        Ball2.update();
+        if (Ball.components[1].onCollisionEnter(Ball2.components[1])){
+            Ball.components[0].velocity = Ball.components[0].velocity.multiple(-1); 
+            Ball.components[0].accelation = Ball.components[0].accelation.multiple(-1);
+            Ball2.components[0].velocity = Ball2.components[0].velocity.multiple(-1); 
+            Ball2.components[0].accelation = Ball2.components[0].accelation.multiple(-1);
+        }
+        ColliderGizmos(Ball.components[1]);
+        ColliderGizmos(Ball2.components[1]);
+        deltaTime += KairaEngine.deltaTime;     
+     }
+</script>
